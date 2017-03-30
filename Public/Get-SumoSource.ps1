@@ -1,4 +1,5 @@
 function Get-SumoSource {
+    [cmdletbinding(DefaultParameterSetName="SourceId")]
     Param
     (
       [parameter(Mandatory=$true)]
@@ -9,7 +10,7 @@ function Get-SumoSource {
       $SourceId,
       [Parameter(Mandatory=$false)]
       [switch]
-      $DownloadFullJSON,
+      $DownloadSourceConfig,
       [parameter(Mandatory=$false)]
       [ValidateNotNullOrEmpty()]
       [string]
@@ -34,8 +35,14 @@ function Get-SumoSource {
     else {
         $Prop = "sources"
     }
+    if ($DownloadSourceConfig) {
+        $URI = "$($URI)?download=true"
+    }
     try {
-        $response = Invoke-RestMethod -Method Get -Uri $URI -Headers $headers -ContentType "application/json" -ErrorAction Stop | Select-Object -ExpandProperty $Prop
+        $response = Invoke-RestMethod -Method Get -Uri $URI -Headers $headers -ContentType "application/json" -ErrorAction Stop
+        if (!$DownloadSourceConfig) {
+            $response = $response | Select-Object -ExpandProperty $Prop
+        }
     }
     catch {
         $_
